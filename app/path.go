@@ -5,9 +5,10 @@ import "github.com/openbyte-os/sdk-go/translation"
 type BuiltInResource string
 
 const (
-	BuiltInResourceBrand      BuiltInResource = "brand"
-	BuiltInResourceDepartment BuiltInResource = "department"
-	BuiltInResourceChannel    BuiltInResource = "channel"
+	BuiltInResourceBrand       BuiltInResource = "brand"
+	BuiltInResourceDepartment  BuiltInResource = "department"
+	BuiltInResourceChannel     BuiltInResource = "channel"
+	BuiltInResourceDistributor BuiltInResource = "distributor"
 )
 
 type Path struct {
