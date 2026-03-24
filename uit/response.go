@@ -1,4 +1,4 @@
-package ui
+package uit
 
 import (
 	"net/http"
