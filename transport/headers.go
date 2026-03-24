@@ -36,6 +36,9 @@ const RequestDepartments = "x-kx-departments"
 // RequestChannels CSV of permitted channels
 const RequestChannels = "x-kx-channels"
 
+// RequestDistributors CSV of permitted distributors
+const RequestDistributors = "x-kx-distributors"
+
 // RequestConfiguration JSON configuration data for the app k:v pairs
 const RequestConfiguration = "x-kx-configuration"
 

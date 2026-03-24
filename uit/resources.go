@@ -17,3 +17,7 @@ func Departments(r *http.Request) []transport.Resource {
 func Channels(r *http.Request) []transport.Resource {
 	return transport.GetResources(r.Header.Get(transport.RequestChannels))
 }
+
+func Distributors(r *http.Request) []transport.Resource {
+	return transport.GetResources(r.Header.Get(transport.RequestDistributors))
+}
