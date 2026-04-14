@@ -2,6 +2,7 @@ package app
 
 const PathHealthCheck = "/_kubex/health"
 const PathDefinition = "/_kubex/definition"
+const PathBlueprints = "/_kubex/blueprints"
 const PathAbout = "/_kubex/about"
 const PathVersion = "/_kubex/version"
 
