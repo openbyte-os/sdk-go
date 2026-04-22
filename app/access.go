@@ -6,4 +6,10 @@ type AccessRequest struct {
 
 	BuiltInResources []BuiltInResource `json:"builtInResources,omitempty"`
 	RequestConfig    []ScopedKey       `json:"requestConfig,omitempty"` // Configuration values that should be sent to this path
+
+	// ReadOnly indicates the Operation is safe for AI assistants to invoke
+	// without confirmation — it does not create, modify, or delete state.
+	// Consumed by Obi's tool-catalog filter in Rubix (/obi/tools). Apps that
+	// haven't opted in get filtered by a fallback HTTP-method heuristic.
+	ReadOnly bool `json:"readOnly,omitempty"`
 }
