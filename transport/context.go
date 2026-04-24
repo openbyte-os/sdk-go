@@ -25,21 +25,24 @@ type RequestContext struct {
 	UserAgent      string
 	Authorization  []app.PermissionStatement
 	Authentication json.RawMessage
+	OwnAppID       *app.GlobalAppID
 }
 
-func NewContext(headers map[string][]string) *RequestContext {
-	c := &RequestContext{}
+func NewContext(headers map[string][]string, ownAppID *app.GlobalAppID) *RequestContext {
+	c := &RequestContext{
+		OwnAppID: ownAppID,
+	}
 	c.ApplyHeaders(headers)
 	return c
 }
 
-func NewContextFromRaw(rawHeaders io.Reader) (*RequestContext, error) {
+func NewContextFromRaw(rawHeaders io.Reader, ownAppID *app.GlobalAppID) (*RequestContext, error) {
 	reader := textproto.NewReader(bufio.NewReader(rawHeaders))
 	headers, err := reader.ReadMIMEHeader()
 	if headers != nil && io.EOF != err && err != nil {
 		return nil, err
 	}
-	return NewContext(headers), nil
+	return NewContext(headers, ownAppID), nil
 }
 
 func (r *RequestContext) ApplyHeaders(headers map[string][]string) {
@@ -101,6 +104,10 @@ func (r RequestContext) Verify(signatureKey string, maxTimeDiff int64) error {
 
 func (r RequestContext) HasPermission(perm app.ScopedKey) bool {
 	allowed := false
+	if perm.GlobalAppID.VendorID == "" && perm.GlobalAppID.AppID == "" && r.OwnAppID != nil {
+		perm.GlobalAppID = *r.OwnAppID
+	}
+
 	for _, statement := range r.Authorization {
 		if perm.GlobalAppID.Matches(statement.Permission.GlobalAppID, false) && perm.Key == statement.Permission.Key {
 			if statement.Effect == app.PermissionEffectDeny {

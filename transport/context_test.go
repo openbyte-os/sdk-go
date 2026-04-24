@@ -15,7 +15,7 @@ import (
 func TestNewContextFromRaw(t *testing.T) {
 	t.Run("parses all known headers", func(t *testing.T) {
 		raw := bytes.NewReader([]byte("X-Kx-Workspace-Id: ws-123\nX-Kx-User-Id: user-456\nX-Kx-Trace-Id: trace-789\nX-Kx-User-Ip: 10.0.0.1\nX-Kx-User-Agent: TestAgent/1.0\nX-Kx-Signature: sig/123\n\n"))
-		r, err := NewContextFromRaw(raw)
+		r, err := NewContextFromRaw(raw, nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
@@ -38,7 +38,7 @@ func TestNewContextFromRaw(t *testing.T) {
 
 	t.Run("handles empty reader", func(t *testing.T) {
 		raw := bytes.NewReader([]byte("\n"))
-		r, err := NewContextFromRaw(raw)
+		r, err := NewContextFromRaw(raw, nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
@@ -49,7 +49,7 @@ func TestNewContextFromRaw(t *testing.T) {
 
 	t.Run("original test - full header set", func(t *testing.T) {
 		raw := bytes.NewReader([]byte("Host: connectors.chargehive.cubex-local.com:8873\nUser-Agent: Kubex Rubix/1.0\nContent-Type: \nX-Kx-Authentication: {\"chive-access-token\":\"dGVzdC1wcm9qZWN0OmQzNDdmZDI3LTFiMTMtNGE0Mi1hNDZiLTBlYTA1MzUzZjFiOTpDN0RCQ1lVVzdLMFdeNzkxYWVmYjc0YmJhNGU2MjllNzg=\",\"chive-project-id\":\"test-project\"}\nX-Kx-Authorization: [{\"e\":\"Allow\",\"p\":{\"vendorID\":\"test-vendor\",\"appID\":\"test-app\",\"Key\":\"view-configuration\"},\"r\":\"*\"}]\nX-Kx-Signature: bb557ad1806c359a6ac9d52046c7fd6dcb2e216d60312f516182e8482d03cf75/1632220779\nX-Kx-Trace-Id: 32eb2a12-9ab4-4dd6-8143-4388bb982ee3\nX-Kx-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36\nX-Kx-User-Id: EFIDFIID-ZFA8TK5L6-MISCR-JY6QKDP\nX-Kx-User-Ip: 127.0.0.1\nX-Kx-Workspace-Id: 6daeb9c0-898a-4ee8-bc1e-96ac82e9fe6b\nX-Requested-With: XMLHttpRequest\nAccept-Encoding: gzip\n\n"))
-		r, err := NewContextFromRaw(raw)
+		r, err := NewContextFromRaw(raw, nil)
 		if err != nil {
 			t.Fatalf("%s", err.Error())
 		}
@@ -69,7 +69,7 @@ func TestNewContext(t *testing.T) {
 			RequestUserAgent:   {"MyAgent"},
 			RequestSignature:   {"abc/123"},
 		}
-		ctx := NewContext(headers)
+		ctx := NewContext(headers, nil)
 		if ctx.WorkspaceID != "workspace-1" {
 			t.Errorf("WorkspaceID = %q, want %q", ctx.WorkspaceID, "workspace-1")
 		}
@@ -88,14 +88,14 @@ func TestNewContext(t *testing.T) {
 	})
 
 	t.Run("empty headers produces empty context", func(t *testing.T) {
-		ctx := NewContext(map[string][]string{})
+		ctx := NewContext(map[string][]string{}, nil)
 		if ctx.WorkspaceID != "" || ctx.UserID != "" {
 			t.Error("expected empty context fields")
 		}
 	})
 
 	t.Run("nil headers produces empty context", func(t *testing.T) {
-		ctx := NewContext(nil)
+		ctx := NewContext(nil, nil)
 		if ctx.WorkspaceID != "" {
 			t.Error("expected empty WorkspaceID")
 		}
@@ -106,7 +106,7 @@ func TestNewContext(t *testing.T) {
 			RequestWorkspaceID: {},
 			RequestUserID:      {"user-1"},
 		}
-		ctx := NewContext(headers)
+		ctx := NewContext(headers, nil)
 		if ctx.WorkspaceID != "" {
 			t.Errorf("expected empty WorkspaceID when value slice is empty, got %q", ctx.WorkspaceID)
 		}
@@ -119,7 +119,7 @@ func TestNewContext(t *testing.T) {
 		headers := map[string][]string{
 			RequestWorkspaceID: {"first", "second"},
 		}
-		ctx := NewContext(headers)
+		ctx := NewContext(headers, nil)
 		if ctx.WorkspaceID != "first" {
 			t.Errorf("WorkspaceID = %q, want %q", ctx.WorkspaceID, "first")
 		}
@@ -137,7 +137,7 @@ func TestApplyHeaders_Authorization(t *testing.T) {
 	headers := map[string][]string{
 		RequestAuthorization: {string(authJSON)},
 	}
-	ctx := NewContext(headers)
+	ctx := NewContext(headers, nil)
 
 	if len(ctx.Authorization) != 2 {
 		t.Fatalf("expected 2 authorization statements, got %d", len(ctx.Authorization))
@@ -155,7 +155,7 @@ func TestApplyHeaders_Authentication(t *testing.T) {
 	headers := map[string][]string{
 		RequestAuthentication: {authData},
 	}
-	ctx := NewContext(headers)
+	ctx := NewContext(headers, nil)
 
 	if string(ctx.Authentication) != authData {
 		t.Errorf("Authentication = %q, want %q", string(ctx.Authentication), authData)
@@ -166,7 +166,7 @@ func TestApplyHeaders_InvalidAuthorizationJSON(t *testing.T) {
 	headers := map[string][]string{
 		RequestAuthorization: {"not-valid-json"},
 	}
-	ctx := NewContext(headers)
+	ctx := NewContext(headers, nil)
 	if len(ctx.Authorization) != 0 {
 		t.Errorf("expected empty Authorization for invalid JSON, got %d entries", len(ctx.Authorization))
 	}
