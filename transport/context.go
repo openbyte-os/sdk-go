@@ -28,7 +28,11 @@ type RequestContext struct {
 	OwnAppID       *app.GlobalAppID
 }
 
-func NewContext(headers map[string][]string, ownAppID *app.GlobalAppID) *RequestContext {
+func NewContext(headers map[string][]string) *RequestContext {
+	return NewAppContext(headers, nil)
+}
+
+func NewAppContext(headers map[string][]string, ownAppID *app.GlobalAppID) *RequestContext {
 	c := &RequestContext{
 		OwnAppID: ownAppID,
 	}
@@ -36,13 +40,17 @@ func NewContext(headers map[string][]string, ownAppID *app.GlobalAppID) *Request
 	return c
 }
 
-func NewContextFromRaw(rawHeaders io.Reader, ownAppID *app.GlobalAppID) (*RequestContext, error) {
+func NewContextFromRaw(rawHeaders io.Reader) (*RequestContext, error) {
+	return NewAppContextFromRaw(rawHeaders, nil)
+}
+
+func NewAppContextFromRaw(rawHeaders io.Reader, ownAppID *app.GlobalAppID) (*RequestContext, error) {
 	reader := textproto.NewReader(bufio.NewReader(rawHeaders))
 	headers, err := reader.ReadMIMEHeader()
 	if headers != nil && io.EOF != err && err != nil {
 		return nil, err
 	}
-	return NewContext(headers, ownAppID), nil
+	return NewAppContext(headers, ownAppID), nil
 }
 
 func (r *RequestContext) ApplyHeaders(headers map[string][]string) {
