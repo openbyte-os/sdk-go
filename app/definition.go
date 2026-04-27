@@ -68,6 +68,8 @@ type Definition struct {
 	AllowedUsers      []string `json:"allowedUsers,omitempty"`      // Specific user IDs with access; empty = no restriction
 	ProvideBlueprints bool     `json:"provideBlueprints,omitempty"` // App serves blueprint definitions via /_kubex/blueprints
 
+	JavascriptExecution Necessity `json:"javascriptExecution,omitempty"` // Whether the app requires JavaScript execution, for environments that may want to disable this
+
 	Hash string `json:"hash,omitempty"` // Hash of the definition for change detection, the latest hash can be returned in HealthResponse
 }
 
