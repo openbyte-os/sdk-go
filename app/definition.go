@@ -59,8 +59,8 @@ type Definition struct {
 
 	QuickActions []EntryPoint `json:"quickActions,omitempty"` // Quick actions made available in the outer shell
 
-	SearchPanelPath string       `json:"searchPanelPath,omitempty"` // Path to post search queries to
-	SearchResults   []EntryPoint `json:"searchResults"`             // To surface pages in the global search results, e.g. Linking to sub pages
+	SearchPanel   EntryPoint   `json:"searchPanel,omitempty"` // Path to post search queries to
+	SearchResults []EntryPoint `json:"searchResults"`         // To surface pages in the global search results, e.g. Linking to sub pages
 
 	PermittedProxyPaths []string `json:"permittedProxyPaths,omitempty"` // Paths that can be proxied by the platform, without auth / modification
 
