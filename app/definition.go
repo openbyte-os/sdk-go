@@ -57,7 +57,8 @@ type Definition struct {
 	QuickCodes     map[string]string `json:"quickCodes,omitempty"`     // Matching Codes to redirect  e.g. [CST => 'view/$1'] $1 is replaced by everything after the code
 	SearchPatterns []SearchPattern   `json:"searchPatterns,omitempty"` // Search patterns to use for this app, used in the global search
 
-	QuickActions []EntryPoint `json:"quickActions,omitempty"` // Quick actions made available in the outer shell
+	QuickActions []EntryPoint  `json:"quickActions,omitempty"` // Quick actions made available in the outer shell
+	Help         []HelpArticle `json:"help,omitempty"`         // Help articles and contextual help metadata
 
 	SearchPanel   EntryPoint   `json:"searchPanel,omitempty"` // Path to post search queries to
 	SearchResults []EntryPoint `json:"searchResults"`         // To surface pages in the global search results, e.g. Linking to sub pages
