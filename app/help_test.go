@@ -84,6 +84,34 @@ func TestDefinitionProvideHelpJsonRoundTrip(t *testing.T) {
 	}
 }
 
+func TestHelpArticlesResponseJsonRoundTrip(t *testing.T) {
+	response := HelpArticlesResponse{
+		Articles: []HelpArticle{{
+			ID:      "refunds",
+			Type:    HelpArticleTypeHowTo,
+			Title:   translation.String("Issue a refund"),
+			Content: translation.String("Use this when a customer needs money returned."),
+		}},
+	}
+
+	raw, err := json.Marshal(response)
+	if err != nil {
+		t.Fatalf("marshal help articles response: %v", err)
+	}
+
+	decoded := HelpArticlesResponse{}
+	if err := json.Unmarshal(raw, &decoded); err != nil {
+		t.Fatalf("unmarshal help articles response: %v", err)
+	}
+
+	if len(decoded.Articles) != 1 {
+		t.Fatalf("articles = %d, want 1", len(decoded.Articles))
+	}
+	if decoded.Articles[0].ID != "refunds" {
+		t.Fatalf("article id = %q, want %q", decoded.Articles[0].ID, "refunds")
+	}
+}
+
 func TestHelpPath(t *testing.T) {
 	if PathHelp != "/_kubex/help" {
 		t.Fatalf("PathHelp = %q, want %q", PathHelp, "/_kubex/help")
