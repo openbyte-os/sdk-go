@@ -68,6 +68,7 @@ type Definition struct {
 	SystemApp         bool     `json:"systemApp,omitempty"`         // Only system users can see/access this app
 	AllowedUsers      []string `json:"allowedUsers,omitempty"`      // Specific user IDs with access; empty = no restriction
 	ProvideBlueprints bool     `json:"provideBlueprints,omitempty"` // App serves blueprint definitions via /_kubex/blueprints
+	ProvideHelp       bool     `json:"provideHelp,omitempty"`       // App serves help articles via /_kubex/help
 
 	JavascriptExecution Necessity `json:"javascriptExecution,omitempty"` // Whether the app requires JavaScript execution, for environments that may want to disable this
 

@@ -58,3 +58,34 @@ func TestDefinitionHelpJsonRoundTrip(t *testing.T) {
 		t.Fatalf("pin = %#v", article.Pins[0])
 	}
 }
+
+func TestDefinitionProvideHelpJsonRoundTrip(t *testing.T) {
+	def := Definition{
+		ID:          NewID("acme", "billing"),
+		Name:        translation.String("Billing"),
+		ProvideHelp: true,
+	}
+
+	raw, err := json.Marshal(def)
+	if err != nil {
+		t.Fatalf("marshal definition: %v", err)
+	}
+
+	decoded := Definition{}
+	if err := json.Unmarshal(raw, &decoded); err != nil {
+		t.Fatalf("unmarshal definition: %v", err)
+	}
+
+	if !decoded.ProvideHelp {
+		t.Fatal("expected provideHelp to round trip")
+	}
+	if len(decoded.Help) != 0 {
+		t.Fatalf("help articles = %d, want 0", len(decoded.Help))
+	}
+}
+
+func TestHelpPath(t *testing.T) {
+	if PathHelp != "/_kubex/help" {
+		t.Fatalf("PathHelp = %q, want %q", PathHelp, "/_kubex/help")
+	}
+}

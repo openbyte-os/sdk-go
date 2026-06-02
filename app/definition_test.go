@@ -160,6 +160,9 @@ func TestFromJson(t *testing.T) {
 				if d.ProvideBlueprints {
 					t.Error("expected ProvideBlueprints to default to false")
 				}
+				if d.ProvideHelp {
+					t.Error("expected ProvideHelp to default to false")
+				}
 			},
 		},
 		{
