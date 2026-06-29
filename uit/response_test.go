@@ -17,8 +17,7 @@ func TestNewResponse(t *testing.T) {
 
 func TestNoContent(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := NewResponse(w)
-	r.NoContent()
+	NoContent(w)
 	if w.Code != 204 {
 		t.Errorf("status code = %d, want 204", w.Code)
 	}
