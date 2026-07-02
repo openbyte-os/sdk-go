@@ -8,31 +8,47 @@ import (
 )
 
 type Response struct {
-	w http.ResponseWriter
+	headers map[string]string
+	code    int
 }
 
-func NewResponse(w http.ResponseWriter) *Response {
-	return &Response{w: w}
+func R() *Response {
+	return &Response{headers: make(map[string]string)}
 }
 
-// NoContent
-// Deprecated: Use NoContent() instead of NewResponse.NoContent()
-func (r *Response) NoContent() { r.w.WriteHeader(http.StatusNoContent) }
-
-func Refresh(w http.ResponseWriter) { w.Header().Set(transport.ResponseRefresh, "self") }
-
-func RefreshFragment(w http.ResponseWriter, fragments ...string) {
-	w.Header().Set(transport.ResponseRefresh, strings.Join(fragments, ","))
+func (r *Response) Refresh() {
+	r.headers[transport.ResponseRefresh] = "self"
 }
 
-func RefreshSpace(w http.ResponseWriter, uri ...string) {
-	//app-space[uri="/${uri}"]
-	// Provide the URI of the spaces to refresh
-	w.Header().Set(transport.ResponseRefresh, strings.Join(uri, ","))
+func (r *Response) NoContent() {
+	r.code = http.StatusNoContent
 }
 
-func RefreshReferer(w http.ResponseWriter) { w.Header().Set(transport.ResponseRefresh, "referer") }
+func (r *Response) RefreshFragment(fragments ...string) {
+	r.headers[transport.ResponseRefresh] = strings.Join(fragments, ",")
+}
 
-func CloseModal(w http.ResponseWriter) { w.Header().Set(transport.ResponseCloseModal, "1") }
+func (r *Response) RefreshSpace(uri ...string) {
+	//app-space[uri="/${uri}"] Provide the URI of the spaces to refresh
+	r.headers[transport.ResponseRefresh] = strings.Join(uri, ",")
+}
 
-func NoContent(w http.ResponseWriter) { w.WriteHeader(http.StatusNoContent) }
+func (r *Response) RefreshReferer() {
+	r.headers[transport.ResponseRefresh] = "referer"
+}
+
+func (r *Response) CloseModal() {
+	r.headers[transport.ResponseCloseModal] = "1"
+}
+
+func (r *Response) Write(w http.ResponseWriter) {
+	if r.headers != nil {
+		for k, v := range r.headers {
+			w.Header().Set(k, v)
+		}
+	}
+
+	if r.code != 0 {
+		w.WriteHeader(r.code)
+	}
+}

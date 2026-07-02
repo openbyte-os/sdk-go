@@ -8,8 +8,7 @@ import (
 )
 
 func TestNewResponse(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := NewResponse(w)
+	r := R()
 	if r == nil {
 		t.Fatal("expected non-nil Response")
 	}
@@ -17,7 +16,10 @@ func TestNewResponse(t *testing.T) {
 
 func TestNoContent(t *testing.T) {
 	w := httptest.NewRecorder()
-	NoContent(w)
+	r := R()
+	r.NoContent()
+	r.Write(w)
+
 	if w.Code != 204 {
 		t.Errorf("status code = %d, want 204", w.Code)
 	}
@@ -25,7 +27,9 @@ func TestNoContent(t *testing.T) {
 
 func TestRefresh(t *testing.T) {
 	w := httptest.NewRecorder()
-	Refresh(w)
+	r := R()
+	r.Refresh()
+	r.Write(w)
 	if got := w.Header().Get(transport.ResponseRefresh); got != "self" {
 		t.Errorf("ResponseRefresh = %q, want %q", got, "self")
 	}
@@ -34,7 +38,9 @@ func TestRefresh(t *testing.T) {
 func TestRefreshFragment(t *testing.T) {
 	t.Run("single fragment", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		RefreshFragment(w, "frag1")
+		r := R()
+		r.RefreshFragment("frag1")
+		r.Write(w)
 		if got := w.Header().Get(transport.ResponseRefresh); got != "frag1" {
 			t.Errorf("ResponseRefresh = %q, want %q", got, "frag1")
 		}
@@ -42,7 +48,9 @@ func TestRefreshFragment(t *testing.T) {
 
 	t.Run("multiple fragments", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		RefreshFragment(w, "frag1", "frag2", "frag3")
+		r := R()
+		r.RefreshFragment("frag1", "frag2", "frag3")
+		r.Write(w)
 		if got := w.Header().Get(transport.ResponseRefresh); got != "frag1,frag2,frag3" {
 			t.Errorf("ResponseRefresh = %q, want %q", got, "frag1,frag2,frag3")
 		}
@@ -50,7 +58,9 @@ func TestRefreshFragment(t *testing.T) {
 
 	t.Run("no fragments", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		RefreshFragment(w)
+		r := R()
+		r.RefreshFragment()
+		r.Write(w)
 		if got := w.Header().Get(transport.ResponseRefresh); got != "" {
 			t.Errorf("ResponseRefresh = %q, want empty", got)
 		}
@@ -60,7 +70,9 @@ func TestRefreshFragment(t *testing.T) {
 func TestRefreshSpace(t *testing.T) {
 	t.Run("single uri", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		RefreshSpace(w, "/dashboard")
+		r := R()
+		r.RefreshSpace("/dashboard")
+		r.Write(w)
 		if got := w.Header().Get(transport.ResponseRefresh); got != "/dashboard" {
 			t.Errorf("ResponseRefresh = %q, want %q", got, "/dashboard")
 		}
@@ -68,7 +80,9 @@ func TestRefreshSpace(t *testing.T) {
 
 	t.Run("multiple uris", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		RefreshSpace(w, "/space1", "/space2")
+		r := R()
+		r.RefreshSpace("/space1", "/space2")
+		r.Write(w)
 		if got := w.Header().Get(transport.ResponseRefresh); got != "/space1,/space2" {
 			t.Errorf("ResponseRefresh = %q, want %q", got, "/space1,/space2")
 		}
@@ -77,7 +91,9 @@ func TestRefreshSpace(t *testing.T) {
 
 func TestRefreshReferer(t *testing.T) {
 	w := httptest.NewRecorder()
-	RefreshReferer(w)
+	r := R()
+	r.RefreshReferer()
+	r.Write(w)
 	if got := w.Header().Get(transport.ResponseRefresh); got != "referer" {
 		t.Errorf("ResponseRefresh = %q, want %q", got, "referer")
 	}
@@ -85,7 +101,9 @@ func TestRefreshReferer(t *testing.T) {
 
 func TestCloseModal(t *testing.T) {
 	w := httptest.NewRecorder()
-	CloseModal(w)
+	r := R()
+	r.CloseModal()
+	r.Write(w)
 	if got := w.Header().Get(transport.ResponseCloseModal); got != "1" {
 		t.Errorf("ResponseCloseModal = %q, want %q", got, "1")
 	}
