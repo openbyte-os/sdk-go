@@ -16,29 +16,35 @@ func R() *Response {
 	return &Response{headers: make(map[string]string)}
 }
 
-func (r *Response) Refresh() {
+func (r *Response) Refresh() *Response {
 	r.headers[transport.ResponseRefresh] = "self"
+	return r
 }
 
-func (r *Response) NoContent() {
+func (r *Response) NoContent() *Response {
 	r.code = http.StatusNoContent
+	return r
 }
 
-func (r *Response) RefreshFragment(fragments ...string) {
+func (r *Response) RefreshFragment(fragments ...string) *Response {
 	r.headers[transport.ResponseRefresh] = strings.Join(fragments, ",")
+	return r
 }
 
-func (r *Response) RefreshSpace(uri ...string) {
+func (r *Response) RefreshSpace(uri ...string) *Response {
 	//app-space[uri="/${uri}"] Provide the URI of the spaces to refresh
 	r.headers[transport.ResponseRefresh] = strings.Join(uri, ",")
+	return r
 }
 
-func (r *Response) RefreshReferer() {
+func (r *Response) RefreshReferer() *Response {
 	r.headers[transport.ResponseRefresh] = "referer"
+	return r
 }
 
-func (r *Response) CloseModal() {
+func (r *Response) CloseModal() *Response {
 	r.headers[transport.ResponseCloseModal] = "1"
+	return r
 }
 
 func (r *Response) Write(w http.ResponseWriter) {

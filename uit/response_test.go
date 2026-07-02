@@ -89,6 +89,19 @@ func TestRefreshSpace(t *testing.T) {
 	})
 }
 
+func TestChainableResponse(t *testing.T) {
+	w := httptest.NewRecorder()
+	R().Refresh().NoContent().Write(w)
+
+	if w.Code != 204 {
+		t.Errorf("status code = %d, want 204", w.Code)
+	}
+
+	if got := w.Header().Get(transport.ResponseRefresh); got != "self" {
+		t.Errorf("ResponseRefresh = %q, want %q", got, "self")
+	}
+}
+
 func TestRefreshReferer(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := R()
