@@ -8,31 +8,53 @@ import (
 )
 
 type Response struct {
-	w http.ResponseWriter
+	headers map[string]string
+	code    int
 }
 
-func NewResponse(w http.ResponseWriter) *Response {
-	return &Response{w: w}
+func R() *Response {
+	return &Response{headers: make(map[string]string)}
 }
 
-// NoContent
-// Deprecated: Use NoContent() instead of NewResponse.NoContent()
-func (r *Response) NoContent() { r.w.WriteHeader(http.StatusNoContent) }
-
-func Refresh(w http.ResponseWriter) { w.Header().Set(transport.ResponseRefresh, "self") }
-
-func RefreshFragment(w http.ResponseWriter, fragments ...string) {
-	w.Header().Set(transport.ResponseRefresh, strings.Join(fragments, ","))
+func (r *Response) Refresh() *Response {
+	r.headers[transport.ResponseRefresh] = "self"
+	return r
 }
 
-func RefreshSpace(w http.ResponseWriter, uri ...string) {
-	//app-space[uri="/${uri}"]
-	// Provide the URI of the spaces to refresh
-	w.Header().Set(transport.ResponseRefresh, strings.Join(uri, ","))
+func (r *Response) NoContent() *Response {
+	r.code = http.StatusNoContent
+	return r
 }
 
-func RefreshReferer(w http.ResponseWriter) { w.Header().Set(transport.ResponseRefresh, "referer") }
+func (r *Response) RefreshFragment(fragments ...string) *Response {
+	r.headers[transport.ResponseRefresh] = strings.Join(fragments, ",")
+	return r
+}
 
-func CloseModal(w http.ResponseWriter) { w.Header().Set(transport.ResponseCloseModal, "1") }
+func (r *Response) RefreshSpace(uri ...string) *Response {
+	//app-space[uri="/${uri}"] Provide the URI of the spaces to refresh
+	r.headers[transport.ResponseRefresh] = strings.Join(uri, ",")
+	return r
+}
 
-func NoContent(w http.ResponseWriter) { w.WriteHeader(http.StatusNoContent) }
+func (r *Response) RefreshReferer() *Response {
+	r.headers[transport.ResponseRefresh] = "referer"
+	return r
+}
+
+func (r *Response) CloseModal() *Response {
+	r.headers[transport.ResponseCloseModal] = "1"
+	return r
+}
+
+func (r *Response) Write(w http.ResponseWriter) {
+	if r.headers != nil {
+		for k, v := range r.headers {
+			w.Header().Set(k, v)
+		}
+	}
+
+	if r.code != 0 {
+		w.WriteHeader(r.code)
+	}
+}
