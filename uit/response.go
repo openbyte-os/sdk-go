@@ -7,47 +7,47 @@ import (
 	"github.com/openbyte-os/sdk-go/transport"
 )
 
-type Response struct {
+type ResponseWriter struct {
 	headers map[string]string
 	code    int
 }
 
-func R() *Response {
-	return &Response{headers: make(map[string]string)}
+func Response() *ResponseWriter {
+	return &ResponseWriter{headers: make(map[string]string)}
 }
 
-func (r *Response) Refresh() *Response {
+func (r *ResponseWriter) Refresh() *ResponseWriter {
 	r.headers[transport.ResponseRefresh] = "self"
 	return r
 }
 
-func (r *Response) NoContent() *Response {
+func (r *ResponseWriter) NoContent() *ResponseWriter {
 	r.code = http.StatusNoContent
 	return r
 }
 
-func (r *Response) RefreshFragment(fragments ...string) *Response {
+func (r *ResponseWriter) RefreshFragment(fragments ...string) *ResponseWriter {
 	r.headers[transport.ResponseRefresh] = strings.Join(fragments, ",")
 	return r
 }
 
-func (r *Response) RefreshSpace(uri ...string) *Response {
+func (r *ResponseWriter) RefreshSpace(uri ...string) *ResponseWriter {
 	//app-space[uri="/${uri}"] Provide the URI of the spaces to refresh
 	r.headers[transport.ResponseRefresh] = strings.Join(uri, ",")
 	return r
 }
 
-func (r *Response) RefreshReferer() *Response {
+func (r *ResponseWriter) RefreshReferer() *ResponseWriter {
 	r.headers[transport.ResponseRefresh] = "referer"
 	return r
 }
 
-func (r *Response) CloseModal() *Response {
+func (r *ResponseWriter) CloseModal() *ResponseWriter {
 	r.headers[transport.ResponseCloseModal] = "1"
 	return r
 }
 
-func (r *Response) Write(w http.ResponseWriter) {
+func (r *ResponseWriter) Write(w http.ResponseWriter) {
 	if r.headers != nil {
 		for k, v := range r.headers {
 			w.Header().Set(k, v)
