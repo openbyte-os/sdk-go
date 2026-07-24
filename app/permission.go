@@ -16,6 +16,8 @@ type PermissionMeta struct {
 	AvailableValues map[string]string   `json:"availableValues,omitempty"`
 	Type            PropertyType        `json:"type"`
 	DisplayType     PropertyDisplayType `json:"displayType,omitempty"`
+	Min             *float64            `json:"min,omitempty"`
+	Max             *float64            `json:"max,omitempty"`
 }
 
 type PermissionEffect string
