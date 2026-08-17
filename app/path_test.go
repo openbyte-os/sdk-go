@@ -208,6 +208,21 @@ func TestPath_WithoutHeader(t *testing.T) {
 	}
 }
 
+func TestPath_WithKiosk(t *testing.T) {
+	p := NewPath("test", "/test")
+	if p.Kiosk {
+		t.Error("Kiosk should default to false")
+	}
+
+	result := p.WithKiosk()
+	if result != p {
+		t.Error("WithKiosk should return the same pointer")
+	}
+	if !p.Kiosk {
+		t.Error("Kiosk should be true after WithKiosk")
+	}
+}
+
 func TestPath_FullChain(t *testing.T) {
 	p := NewPath("dashboard", "/dashboard").
 		WithMethod("GET").
@@ -218,7 +233,8 @@ func TestPath_FullChain(t *testing.T) {
 		WithRequestPermissions(ScopedKey{Key: "read"}).
 		WithRequiredPermissions(ScopedKey{Key: "admin"}).
 		WithoutBreadCrumbs().
-		WithoutHeader()
+		WithoutHeader().
+		WithKiosk()
 
 	if p.ID != "dashboard" {
 		t.Errorf("ID = %q, want dashboard", p.ID)
@@ -249,5 +265,8 @@ func TestPath_FullChain(t *testing.T) {
 	}
 	if !p.HideHeader {
 		t.Error("HideHeader should be true")
+	}
+	if !p.Kiosk {
+		t.Error("Kiosk should be true")
 	}
 }
