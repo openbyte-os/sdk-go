@@ -25,6 +25,7 @@ type Path struct {
 	HideBreadcrumb bool `json:"hideBreadcrumb,omitempty"` // Hide the breadcrumb when this path is active
 	PromptOnExit   bool `json:"promptOnExit,omitempty"`   // Prompt the user when they try to leave the page
 	HoverCard      bool `json:"hoverCard,omitempty"`      // If this path can be displayed as a hoverCard
+	Kiosk          bool `json:"kiosk,omitempty"`          // Default to kiosk mode when this path is active
 
 	Navigation []EntryPoint `json:"navigation,omitempty"`
 	Actions    []EntryPoint `json:"actions,omitempty"`
@@ -76,5 +77,10 @@ func (p *Path) WithoutBreadCrumbs() *Path {
 
 func (p *Path) WithoutHeader() *Path {
 	p.HideHeader = true
+	return p
+}
+
+func (p *Path) WithKiosk() *Path {
+	p.Kiosk = true
 	return p
 }
