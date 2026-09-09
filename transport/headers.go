@@ -86,6 +86,11 @@ const ResponseRemoveSelf = "x-kubex-remove-self"
 // ResponseRefresh refresh (self, referer or space-ID[#fragment])
 const ResponseRefresh = "x-kubex-refresh"
 
+// ResponseRefreshDataTable reload a data table's rows, leaving the page around
+// it alone so the reader keeps their search, filters and page ("self" for the
+// table the request came from, or a CSS selector)
+const ResponseRefreshDataTable = "x-kubex-refresh-data-table"
+
 // ResponseForwardUri forward the browser to a new URI
 const ResponseForwardUri = "x-kubex-forward-uri"
 

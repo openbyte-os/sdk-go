@@ -42,6 +42,18 @@ func (r *ResponseWriter) RefreshReferer() *ResponseWriter {
 	return r
 }
 
+// RefreshDataTable reloads a data table's rows and leaves the page around it
+// alone, so the reader keeps the search, filters and page they were on. With no
+// selector it reloads the table the request came from.
+func (r *ResponseWriter) RefreshDataTable(selectors ...string) *ResponseWriter {
+	value := "self"
+	if len(selectors) > 0 {
+		value = strings.Join(selectors, ",")
+	}
+	r.headers[transport.ResponseRefreshDataTable] = value
+	return r
+}
+
 func (r *ResponseWriter) CloseModal() *ResponseWriter {
 	r.headers[transport.ResponseCloseModal] = "1"
 	return r

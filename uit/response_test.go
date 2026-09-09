@@ -112,6 +112,25 @@ func TestRefreshReferer(t *testing.T) {
 	}
 }
 
+func TestRefreshDataTable(t *testing.T) {
+	t.Run("no selector", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		Response().RefreshDataTable().Write(w)
+		if got := w.Header().Get(transport.ResponseRefreshDataTable); got != "self" {
+			t.Errorf("ResponseRefreshDataTable = %q, want %q", got, "self")
+		}
+	})
+
+	t.Run("selectors", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		Response().RefreshDataTable("zn-data-table[data-uri=\"/routes\"]", "#other").Write(w)
+		want := "zn-data-table[data-uri=\"/routes\"],#other"
+		if got := w.Header().Get(transport.ResponseRefreshDataTable); got != want {
+			t.Errorf("ResponseRefreshDataTable = %q, want %q", got, want)
+		}
+	})
+}
+
 func TestCloseModal(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := Response()
