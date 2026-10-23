@@ -16,12 +16,14 @@ const (
 type LaunchMode string
 
 const (
-	LaunchModePage       LaunchMode = "page"   // (default) Render in the page
-	LaunchModeModal      LaunchMode = "modal"  // Launch in a modal
-	LaunchModeWindow     LaunchMode = "window" // Launch in a new window
-	LaunchModeSlide      LaunchMode = "slide"  // Right side overlay app
-	LaunchModeActionDrop LaunchMode = "adrop"  // Drop down from the action bar
-	LaunchModeActionFill LaunchMode = "afill"  // Fill the action bar with the app
+	LaunchModePage        LaunchMode = "page"   // (default) Render in the page
+	LaunchModeModal       LaunchMode = "modal"  // Launch in a modal
+	LaunchModeFloat       LaunchMode = "float"  // Launch in a floating modal
+	LaunchModeWindow      LaunchMode = "window" // Launch in a new window
+	LaunchModeSlide       LaunchMode = "slide"  // Right side overlay app
+	LaunchModeActionDrop  LaunchMode = "adrop"  // Drop down from the action bar
+	LaunchModeActionFill  LaunchMode = "afill"  // Fill the action bar with the app
+	LaunchModeActionSlide LaunchMode = "aslide" // Launch the action as a slide
 )
 
 type IntegrationPoint struct {
