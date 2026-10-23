@@ -36,6 +36,7 @@ type IntegrationPoint struct {
 	Category            Category                     `json:"category,omitempty"`            // Category, if different from the main app
 	Priority            int                          `json:"priority,omitempty"`            // Priority of the integration point, higher is more important
 	EntryPoint          EntryPoint                   `json:"entryPoint,omitempty"`          // How the integration is presented
+	SecondaryActions    []EntryPoint                 `json:"secondaryActions,omitempty"`    // Long press/right click actions for action integrations
 	PanelActions        []EntryPoint                 `json:"panelActions,omitempty"`        // Actions to add to the panel
 	PanelTabs           []EntryPoint                 `json:"panelTabs,omitempty"`           // Tabs to show - panels only
 	Preferences         []IntegrationPointPreference `json:"preferences,omitempty"`         // Preferences for the integration
