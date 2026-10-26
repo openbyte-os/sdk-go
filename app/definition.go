@@ -39,6 +39,7 @@ type Definition struct {
 	Paths                []Path                 `json:"paths,omitempty"`
 	Unify                []IntegrationPoint     `json:"unify,omitempty"` // How to link with other applications
 	ActivationSteps      []ActivationStep       `json:"activationSteps,omitempty"`
+	ScheduledTasks       []ScheduledTask        `json:"scheduledTasks,omitempty"` // Recurring tasks available for workspace enablement
 	ListenToEvents       []ScopedKey            `json:"listenToEvents,omitempty"`
 	Navigation           []Navigation           `json:"navigation,omitempty"` // App navigation
 	NavigationUri        string                 `json:"navigationUri,omitempty"`
