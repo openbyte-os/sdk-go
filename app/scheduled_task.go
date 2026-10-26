@@ -7,10 +7,11 @@ import (
 
 // ScheduledTask declares a recurring workspace task in an app definition.
 type ScheduledTask struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Path  string `json:"path"`  // Absolute app-relative path receiving ScheduledTaskRequest via POST.
-	Every string `json:"every"` // Go duration in whole minutes, at least one minute; aligned to UTC epoch boundaries.
+	Required bool   `json:"required,omitempty"` // Runs whenever the app is installed; workspace managers cannot disable it.
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Path     string `json:"path"`  // Absolute app-relative path receiving ScheduledTaskRequest via POST.
+	Every    string `json:"every"` // Go duration in whole minutes, at least one minute; aligned to UTC epoch boundaries.
 }
 
 // ScheduledTaskRequest is sent as JSON when Rubix triggers an enabled workspace task.

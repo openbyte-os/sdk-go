@@ -59,3 +59,30 @@ func TestScheduledTaskJSONContracts(t *testing.T) {
 		t.Fatalf("response JSON: %s", data)
 	}
 }
+
+func TestScheduledTaskRequiredDefaultsAndHash(t *testing.T) {
+	var optional ScheduledTask
+	if err := json.Unmarshal([]byte(`{"id":"sync","path":"/sync","every":"1h"}`), &optional); err != nil {
+		t.Fatal(err)
+	}
+	if optional.Required {
+		t.Fatal("task without required must be optional")
+	}
+	def := Definition{ScheduledTasks: []ScheduledTask{optional}}
+	hash := def.GetHash(false)
+	def.ScheduledTasks[0].Required = true
+	if def.GetHash(false) == hash {
+		t.Fatal("required flag did not change definition hash")
+	}
+	data, err := json.Marshal(def)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := FromJson(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(decoded.ScheduledTasks) != 1 || !decoded.ScheduledTasks[0].Required {
+		t.Fatal("required flag did not round trip")
+	}
+}
