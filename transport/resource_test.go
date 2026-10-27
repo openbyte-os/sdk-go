@@ -46,3 +46,27 @@ func TestResource_ToHeader(t *testing.T) {
 		}
 	}
 }
+
+func TestChannelDepartments(t *testing.T) {
+	in := map[string]string{"chanB": "dept1", "chanA": "dept2"}
+	header := ChannelDepartmentsHeader(in)
+	if header != "chanA=dept2,chanB=dept1" {
+		t.Fatalf("ChannelDepartmentsHeader(%v) = %q", in, header)
+	}
+	if got := GetChannelDepartments(header); !reflect.DeepEqual(got, in) {
+		t.Fatalf("GetChannelDepartments(%q) = %v, expected %v", header, got, in)
+	}
+
+	tests := []struct {
+		input    string
+		expected map[string]string
+	}{
+		{"", map[string]string{}},
+		{"a=1,b,=2,c=", map[string]string{"a": "1"}},
+	}
+	for _, tt := range tests {
+		if got := GetChannelDepartments(tt.input); !reflect.DeepEqual(got, tt.expected) {
+			t.Fatalf("GetChannelDepartments(%q) = %v, expected %v", tt.input, got, tt.expected)
+		}
+	}
+}

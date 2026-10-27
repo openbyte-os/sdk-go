@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -47,4 +48,26 @@ func GetResources(from string) []Resource {
 	}
 
 	return resources
+}
+
+// ChannelDepartmentsHeader encodes a channelID => departmentID map as a RequestChannelDepartments header value
+func ChannelDepartmentsHeader(channelDepartments map[string]string) string {
+	pairs := make([]string, 0, len(channelDepartments))
+	for channelID, departmentID := range channelDepartments {
+		pairs = append(pairs, channelID+"="+departmentID)
+	}
+	sort.Strings(pairs)
+	return strings.Join(pairs, ",")
+}
+
+// GetChannelDepartments parses a RequestChannelDepartments header value into a channelID => departmentID map
+func GetChannelDepartments(from string) map[string]string {
+	ret := make(map[string]string)
+	for _, pair := range strings.Split(from, ",") {
+		channelID, departmentID, ok := strings.Cut(pair, "=")
+		if ok && channelID != "" && departmentID != "" {
+			ret[channelID] = departmentID
+		}
+	}
+	return ret
 }

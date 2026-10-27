@@ -36,6 +36,9 @@ const RequestDepartments = "x-kx-departments"
 // RequestChannels CSV of permitted channels
 const RequestChannels = "x-kx-channels"
 
+// RequestChannelDepartments CSV of channelID=departmentID for each channel in RequestChannels that belongs to a department
+const RequestChannelDepartments = "x-kx-channel-departments"
+
 // RequestDistributors CSV of permitted distributors
 const RequestDistributors = "x-kx-distributors"
 
