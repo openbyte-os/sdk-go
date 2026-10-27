@@ -12,6 +12,7 @@ const PathConfigure = "/_kubex/configure"
 const PathActivate = "/_kubex/activate"
 
 const PathPrefixWebhooks = "/_webhooks/"
+const PathPrefixTasks = "/_tasks/"
 
 // BlueprintsResponse should be returned as json from PathBlueprints.
 type BlueprintsResponse struct {
