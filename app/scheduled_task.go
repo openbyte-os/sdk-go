@@ -13,7 +13,7 @@ type ScheduledTask struct {
 	Name               string     `json:"name"`
 	Description        string     `json:"description,omitempty"`
 	Configuration      []Property `json:"configuration,omitempty"` // Workspace task options, using the standard property labels, types, choices and defaults.
-	Path               string     `json:"path"`                    // Absolute app-relative path receiving ScheduledTaskRequest via POST.
+	Path               string     `json:"path"`                    // Task route under PathPrefixTasks, with an optional leading slash or existing prefix.
 	Every              string     `json:"every"`                   // Whole-minute Go duration (e.g. 24h) or five-field cron expression (e.g. "0 1 * * *"); evaluated in UTC.
 }
 
