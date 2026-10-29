@@ -42,6 +42,9 @@ const RequestChannelDepartments = "x-kx-channel-departments"
 // RequestDistributors CSV of permitted distributors
 const RequestDistributors = "x-kx-distributors"
 
+// RequestTeams CSV of the teams the user belongs to, as ID:Name resources
+const RequestTeams = "x-kx-teams"
+
 // RequestConfiguration JSON configuration data for the app k:v pairs
 const RequestConfiguration = "x-kx-configuration"
 

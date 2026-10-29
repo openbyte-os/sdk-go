@@ -9,6 +9,7 @@ const (
 	BuiltInResourceDepartment  BuiltInResource = "department"
 	BuiltInResourceChannel     BuiltInResource = "channel"
 	BuiltInResourceDistributor BuiltInResource = "distributor"
+	BuiltInResourceTeam        BuiltInResource = "team"
 )
 
 type Path struct {
