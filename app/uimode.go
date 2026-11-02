@@ -8,5 +8,6 @@ const (
 	UIModeBasic       UIMode = "basic"       // simple application - used for non-native applications
 	UIModeIntegration UIMode = "integration" // Integrated into existing pages
 	UIModeHelp        UIMode = "help"        // Help App
+	UIModeService     UIMode = "service"     // Service definition, e.g. translation service
 	UIModeNone        UIMode = "none"        // No UI - flow only
 )
