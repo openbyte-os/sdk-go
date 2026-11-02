@@ -6,6 +6,8 @@ type ProviderRegistration struct {
 	Key     string   `json:"key"`               // unique within app for same type, e.g. "claude", "openai"
 	Labels  []string `json:"labels,omitempty"`  // freeform tags for routing preference
 	Actions []string `json:"actions,omitempty"` // subset of valid actions for this type
+	Version int      `json:"version,omitempty"` // Major service contract version; omitted for legacy providers.
+	Path    string   `json:"path,omitempty"`    // App-relative base path for the service's HTTP endpoints; required for versioned services.
 }
 
 // ProviderDependency declares that an app needs access to a provider type.
@@ -14,4 +16,5 @@ type ProviderDependency struct {
 	Required        bool     `json:"required"`                  // if true, workspace must have this provider
 	Reason          string   `json:"reason,omitempty"`          // human-readable explanation
 	RequiredActions []string `json:"requiredActions,omitempty"` // actions the consumer needs
+	Version         int      `json:"version,omitempty"`         // Exact major service contract version; omitted for legacy dependencies.
 }
