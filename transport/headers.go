@@ -115,3 +115,7 @@ const ResponseClearValue = "x-kubex-clear-value"
 const RequestPreferredLabels = "x-kx-preferred-labels"
 const RequestConnectionID = "x-kx-connection-id"
 const RequestConnectionToken = "x-kx-connection-token"
+
+// RequestServiceKey selects a workspace-specific instance returned by the
+// provider's discovery endpoint. It is an identifier, never an API credential.
+const RequestServiceKey = "x-kx-service-key"
