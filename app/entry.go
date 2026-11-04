@@ -88,3 +88,13 @@ func (n *EntryPoint) WithTitle(title translation.Text) *EntryPoint {
 	n.Title = title
 	return n
 }
+
+func (n *EntryPoint) WithRequiredPermissions(permissions ...ScopedKey) *EntryPoint {
+	n.RequiredPermissions = permissions
+	return n
+}
+
+func (n *EntryPoint) WithContextHeaders(contextHeaders bool) *EntryPoint {
+	n.ContextHeaders = contextHeaders
+	return n
+}
