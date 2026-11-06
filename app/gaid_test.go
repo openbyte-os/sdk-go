@@ -117,6 +117,10 @@ func TestGlobalAppID_Validate(t *testing.T) {
 		{"vendor ending with hyphen", GlobalAppID{VendorID: "vendor-", AppID: "my-app"}, false, true},
 		{"app starting with hyphen", GlobalAppID{VendorID: "my-vendor", AppID: "-app"}, false, true},
 		{"numeric ids", GlobalAppID{VendorID: "123", AppID: "456"}, false, false},
+		{"reserved vendor ch", GlobalAppID{VendorID: "ch", AppID: "translate"}, false, false},
+		{"reserved vendor kx", GlobalAppID{VendorID: "kx", AppID: "workspace"}, false, false},
+		{"other 2-char vendor", GlobalAppID{VendorID: "ab", AppID: "my-app"}, false, true},
+		{"2-char app", GlobalAppID{VendorID: "my-vendor", AppID: "ch"}, false, true},
 	}
 
 	for _, tt := range tests {

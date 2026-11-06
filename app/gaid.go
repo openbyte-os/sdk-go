@@ -33,7 +33,7 @@ func (g GlobalAppID) AsPath() string   { return g.String() + "/" + g.tertiary }
 // Validate a Global App ID, strict mode will ensure tertiary data is empty
 func (g GlobalAppID) Validate(strict bool) error {
 
-	if err := ValidateID(g.VendorID); err != nil {
+	if err := ValidateVendorID(g.VendorID); err != nil {
 		return errors.New("Invalid Vendor ID " + g.VendorID)
 	}
 
@@ -107,4 +107,15 @@ func NewScopedKey(key string, gaid *GlobalAppID) ScopedKey {
 		return ScopedKey{Key: key}
 	}
 	return ScopedKey{Key: key, GlobalAppID: *gaid}
+}
+
+// reservedVendorIDs are platform vendors whose IDs predate the 3-character minimum.
+var reservedVendorIDs = map[string]bool{"ch": true, "kx": true}
+
+// ValidateVendorID verifies a vendor ID, allowing the reserved platform vendors
+func ValidateVendorID(input string) error {
+	if reservedVendorIDs[input] {
+		return nil
+	}
+	return ValidateID(input)
 }
