@@ -5,6 +5,7 @@ const PathDefinition = "/_kubex/definition" // returns Definition
 const PathBlueprints = "/_kubex/blueprints" // returns BlueprintsResponse
 const PathHelp = "/_kubex/help"             // returns HelpArticlesResponse
 const PathVersion = "/_kubex/version"       // returns Version
+const PathListing = "/_kubex/listing"       // returns Listing, the app's marketplace listing for the running version
 
 const PathAbout = "/_kubex/about" // Returns html information to show in the about view
 
