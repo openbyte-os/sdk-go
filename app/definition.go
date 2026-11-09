@@ -59,6 +59,7 @@ type Definition struct {
 	SearchPatterns []SearchPattern   `json:"searchPatterns,omitempty"` // Search patterns to use for this app, used in the global search
 
 	QuickActions []EntryPoint `json:"quickActions,omitempty"` // Quick actions made available in the outer shell
+	Actions      []Action     `json:"actions,omitempty"`      // Submissions other apps can offer with <app-action-button>
 
 	SearchPanel   EntryPoint   `json:"searchPanel,omitempty"` // Path to post search queries to
 	SearchResults []EntryPoint `json:"searchResults"`         // To surface pages in the global search results, e.g. Linking to sub pages

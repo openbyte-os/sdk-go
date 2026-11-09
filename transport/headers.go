@@ -51,6 +51,10 @@ const RequestConfiguration = "x-kx-configuration"
 // RequestCallerApp identifies the calling app in an RPC request
 const RequestCallerApp = "x-kx-caller-app"
 
+// RequestAction is the key of the app.Action a request submits. Rubix sets it
+// only after the submission passed CSRF and input validation.
+const RequestAction = "x-kx-action"
+
 const RequestEditorID = "x-kx-editor-id"
 const RequestFetchStyle = "x-kx-fetch-style"
 const RequestContextData = "x-kx-context-data"
@@ -76,6 +80,9 @@ const ResponseAlertDanger = "x-kubex-alert-danger"
 
 // ResponseAppendElement append element to the DOM
 const ResponseAppendElement = "x-kubex-append-element"
+
+// ResponseActionStatus is the app.ActionStatus an action's StatusPath answers with
+const ResponseActionStatus = "x-kubex-action-status"
 
 // ResponseVanishElement vanish element from the DOM
 const ResponseVanishElement = "x-kubex-vanish-element"
