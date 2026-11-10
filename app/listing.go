@@ -36,9 +36,9 @@ type ListingBrand struct {
 	Color string `json:"color,omitempty"`
 	// Pattern is one of ListingPatterns, drawn faintly over the cover colour.
 	Pattern ListingPattern `json:"pattern,omitempty"`
-	// Cover is a wide image shown behind the card header and as the app page
-	// banner, 1200x400 or wider at 3:1. It follows the same URL rules as
-	// screenshots, and replaces the colour and pattern where it shows.
+	// Cover is a wide image behind the app page banner, 1200x400 or wider at
+	// 3:1, under the app's icon, name and tagline. It follows the same URL
+	// rules as screenshots, and replaces the colour and pattern there.
 	Cover string `json:"cover,omitempty"`
 	// Icon is a square image, 256x256 or larger, shown on the app's tile in the
 	// marketplace in place of its definition icon. The rest of the UI keeps the
@@ -55,17 +55,17 @@ type ListingBrand struct {
 type ListingPattern string
 
 const (
-	PatternNone     ListingPattern = "none"
-	PatternDots     ListingPattern = "dots"
-	PatternGrid     ListingPattern = "grid"
-	PatternDiagonal ListingPattern = "diagonal"
-	PatternWaves    ListingPattern = "waves"
-	PatternRings    ListingPattern = "rings"
-	PatternCircuit  ListingPattern = "circuit"
+	PatternNone       ListingPattern = "none"
+	PatternDots       ListingPattern = "dots"
+	PatternGrid       ListingPattern = "grid"
+	PatternDiagonal   ListingPattern = "diagonal"
+	PatternWaves      ListingPattern = "waves"
+	PatternRings      ListingPattern = "rings"
+	PatternCrosshatch ListingPattern = "crosshatch"
 )
 
 // ListingPatterns are the patterns a listing may choose.
-var ListingPatterns = []ListingPattern{PatternNone, PatternDots, PatternGrid, PatternDiagonal, PatternWaves, PatternRings, PatternCircuit}
+var ListingPatterns = []ListingPattern{PatternNone, PatternDots, PatternGrid, PatternDiagonal, PatternWaves, PatternRings, PatternCrosshatch}
 
 // ListingScreenshot URL is an https URL, or a path the platform fetches from
 // the app (served from PathListing) or from the import zip (listing files).
