@@ -51,6 +51,15 @@ const RequestConfiguration = "x-kx-configuration"
 // RequestCallerApp identifies the calling app in an RPC request
 const RequestCallerApp = "x-kx-caller-app"
 
+// RequestAppDefinition is the JSON app.PublicDefinition of another app, which Rubix
+// sets only on requests to system apps: the app named by QueryLookupApp on a page
+// request, or the calling app on an operation. Rubix never forwards a client's value.
+const RequestAppDefinition = "x-kx-app-definition"
+
+// QueryLookupApp is the query parameter naming the app (vendor/app) whose
+// definition a system app's page request needs in RequestAppDefinition.
+const QueryLookupApp = "kx-app"
+
 // RequestAction is the key of the app.Action a request submits. Rubix sets it
 // only after the submission passed CSRF and input validation.
 const RequestAction = "x-kx-action"
