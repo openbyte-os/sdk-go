@@ -40,6 +40,7 @@ type Definition struct {
 	Unify                []IntegrationPoint     `json:"unify,omitempty"` // How to link with other applications
 	ActivationSteps      []ActivationStep       `json:"activationSteps,omitempty"`
 	ScheduledTasks       []ScheduledTask        `json:"scheduledTasks,omitempty"` // Recurring tasks available for workspace enablement
+	Notifications        *Notifications         `json:"notifications,omitempty"`  // Notification groups and types this app publishes
 	ListenToEvents       []ScopedKey            `json:"listenToEvents,omitempty"`
 	Navigation           []Navigation           `json:"navigation,omitempty"` // App navigation
 	NavigationUri        string                 `json:"navigationUri,omitempty"`
@@ -104,4 +105,19 @@ func FromJson(jsonBytes []byte) (*Definition, error) {
 		return nil, errors.New("unable to decode app definition json")
 	}
 	return def, nil
+}
+
+// PublicDefinition is the part of a definition Rubix shares with other apps:
+// what members already see of it, never endpoints or configuration. It decodes
+// as a Definition.
+type PublicDefinition struct {
+	ID            GlobalAppID      `json:"id"`
+	Name          translation.Text `json:"name"`
+	Description   translation.Text `json:"description,omitzero"`
+	Icon          string           `json:"icon,omitempty"`
+	Notifications *Notifications   `json:"notifications,omitempty"`
+}
+
+func (d *Definition) Public() PublicDefinition {
+	return PublicDefinition{ID: d.ID, Name: d.Name, Description: d.Description, Icon: d.Icon, Notifications: d.Notifications}
 }
