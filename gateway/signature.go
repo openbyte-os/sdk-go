@@ -26,6 +26,9 @@ var ErrUnsigned = errors.New("gateway: request is not signed by the gateway")
 type Caller struct {
 	Workspace string
 	App       app.GlobalAppID
+	// Definition is the caller's public definition, which the gateway sends only
+	// to system apps; nil when absent or not the caller's.
+	Definition *app.PublicDefinition
 }
 
 // VerifyRequest authenticates a request the gateway forwarded to an app
@@ -39,7 +42,7 @@ func VerifyRequest(r *http.Request, body []byte, keys string, now time.Time) (Ca
 		}
 	}
 	// A gateway call carries the app's identity only.
-	if len(r.Header.Values("Authorization")) > 0 || len(r.Header.Values(transport.RequestUserID)) > 0 {
+	if len(r.Header.Values("Authorization")) > 0 || len(r.Header.Values(transport.RequestUserID)) > 0 || len(r.Header.Values(transport.RequestAppDefinition)) > 1 {
 		return Caller{}, ErrUnsigned
 	}
 	parts := strings.Split(r.Header.Get(SignatureHeader), "/")
@@ -61,7 +64,7 @@ func VerifyRequest(r *http.Request, body []byte, keys string, now time.Time) (Ca
 	}
 	message := signedMessage(r, body, parts[1])
 	valid := false
-	for _, key := range strings.Split(keys, ",") {
+	for key := range strings.SplitSeq(keys, ",") {
 		if key = strings.TrimSpace(key); key == "" {
 			continue
 		}
@@ -72,11 +75,16 @@ func VerifyRequest(r *http.Request, body []byte, keys string, now time.Time) (Ca
 	if !valid {
 		return Caller{}, ErrUnsigned
 	}
-	return Caller{Workspace: workspace, App: caller}, nil
+	verified := Caller{Workspace: workspace, App: caller}
+	var def app.PublicDefinition
+	if json.Unmarshal([]byte(r.Header.Get(transport.RequestAppDefinition)), &def) == nil && def.ID.String() == caller.String() {
+		verified.Definition = &def
+	}
+	return verified, nil
 }
 
 // SignRequest signs a request the way the gateway does. The workspace, caller
-// app and trace ID headers must already be set.
+// app, trace ID and any app definition headers must already be set.
 func SignRequest(r *http.Request, body []byte, key string, now time.Time) {
 	timestamp := strconv.FormatInt(now.Unix(), 10)
 	mac := hmac.New(sha256.New, []byte(key))
@@ -86,10 +94,16 @@ func SignRequest(r *http.Request, body []byte, key string, now time.Time) {
 
 func signedMessage(r *http.Request, body []byte, timestamp string) []byte {
 	bodyHash := sha256.Sum256(body)
-	message, _ := json.Marshal([]string{
+	fields := []string{
 		"rubix-gateway-v1", r.Method, r.URL.RequestURI(),
 		r.Header.Get(transport.RequestWorkspaceID), r.Header.Get(transport.RequestCallerApp), r.Header.Get(transport.RequestTraceID),
 		timestamp, hex.EncodeToString(bodyHash[:]),
-	})
+	}
+	// Keep in sync with Rubix gateway/request_signature.go: bound only when sent.
+	if def := r.Header.Get(transport.RequestAppDefinition); def != "" {
+		defHash := sha256.Sum256([]byte(def))
+		fields = append(fields, hex.EncodeToString(defHash[:]))
+	}
+	message, _ := json.Marshal(fields)
 	return message
 }

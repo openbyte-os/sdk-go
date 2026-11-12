@@ -70,6 +70,22 @@ ID, headers, and the original body in `Response`. Use `json.RawMessage` for raw
 JSON inputs, and nil output to inspect a response body yourself. Nil input is
 sent as JSON `null`; use `map[string]any{}` when an action expects an empty object.
 
+## Notifications
+
+```go
+err := workspace.Notify(ctx, gateway.Notification{
+    Category: "assessment-completed",
+    Title:    "Your interaction has been scored",
+    Path:     "/assessments/123",
+    Users:    []string{userID},
+})
+```
+
+`Notify` publishes as the calling app through `kx/notifications`. `Category` must
+be a notification type declared in the app definition. An empty `ID` publishes a
+new notification each call; set `ID` and raise `Revision` to update one in place.
+`State` defaults to `posted` and `Revision` to 1.
+
 ## Errors and transport
 
 ```go
