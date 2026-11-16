@@ -56,6 +56,11 @@ const RequestCallerApp = "x-kx-caller-app"
 // request, or the calling app on an operation. Rubix never forwards a client's value.
 const RequestAppDefinition = "x-kx-app-definition"
 
+// RequestNotifyingApps is a JSON object mapping each workspace app the user can
+// open whose definition declares notifications (vendor/app) to its name. Rubix
+// sets it only on page requests to system apps and never forwards a client's value.
+const RequestNotifyingApps = "x-kx-notifying-apps"
+
 // QueryLookupApp is the query parameter naming the app (vendor/app) whose
 // definition a system app's page request needs in RequestAppDefinition.
 const QueryLookupApp = "kx-app"
