@@ -137,6 +137,15 @@ const RequestPreferredLabels = "x-kx-preferred-labels"
 const RequestConnectionID = "x-kx-connection-id"
 const RequestConnectionToken = "x-kx-connection-token"
 
+// RequestConnections JSON []Connection: the vendor links the app declared in
+// its definition and that exist for this workspace and user.
+const RequestConnections = "x-kx-connections"
+
+// RequestConnectionBrands JSON []ConnectionBrand: the workspace's brands and
+// the account each has, for the providers the app declared that take an
+// account per brand.
+const RequestConnectionBrands = "x-kx-connection-brands"
+
 // RequestServiceKey selects a workspace-specific instance returned by the
 // provider's discovery endpoint. It is an identifier, never an API credential.
 const RequestServiceKey = "x-kx-service-key"

@@ -7,11 +7,9 @@ import (
 	"github.com/openbyte-os/sdk-go/translation"
 )
 
-func TestDefinitionHelpJsonRoundTrip(t *testing.T) {
-	def := Definition{
-		ID:   NewID("acme", "billing"),
-		Name: translation.String("Billing"),
-		Help: []HelpArticle{{
+func TestHelpArticleDetailsJsonRoundTrip(t *testing.T) {
+	def := HelpArticlesResponse{
+		Articles: []HelpArticle{{
 			ID:              "refunds",
 			Type:            HelpArticleTypeHowTo,
 			Title:           translation.String("Issue a refund"),
@@ -35,16 +33,16 @@ func TestDefinitionHelpJsonRoundTrip(t *testing.T) {
 		t.Fatalf("marshal definition: %v", err)
 	}
 
-	decoded := Definition{}
+	decoded := HelpArticlesResponse{}
 	if err := json.Unmarshal(raw, &decoded); err != nil {
 		t.Fatalf("unmarshal definition: %v", err)
 	}
 
-	if len(decoded.Help) != 1 {
-		t.Fatalf("help articles = %d, want 1", len(decoded.Help))
+	if len(decoded.Articles) != 1 {
+		t.Fatalf("help articles = %d, want 1", len(decoded.Articles))
 	}
 
-	article := decoded.Help[0]
+	article := decoded.Articles[0]
 	if article.Type != HelpArticleTypeHowTo {
 		t.Fatalf("article type = %q, want %q", article.Type, HelpArticleTypeHowTo)
 	}
@@ -79,8 +77,12 @@ func TestDefinitionProvideHelpJsonRoundTrip(t *testing.T) {
 	if !decoded.ProvideHelp {
 		t.Fatal("expected provideHelp to round trip")
 	}
-	if len(decoded.Help) != 0 {
-		t.Fatalf("help articles = %d, want 0", len(decoded.Help))
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &fields); err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := fields["help"]; exists {
+		t.Fatal("help articles must be served through the help endpoint")
 	}
 }
 

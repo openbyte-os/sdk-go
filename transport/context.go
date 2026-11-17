@@ -25,7 +25,11 @@ type RequestContext struct {
 	UserAgent      string
 	Authorization  []app.PermissionStatement
 	Authentication json.RawMessage
-	OwnAppID       *app.GlobalAppID
+	Connections    []Connection
+	// ConnectionBrands are the workspace's brands on the app's providers that
+	// take an account per brand.
+	ConnectionBrands []ConnectionBrand
+	OwnAppID         *app.GlobalAppID
 }
 
 func NewContext(headers map[string][]string) *RequestContext {
@@ -73,6 +77,10 @@ func (r *RequestContext) ApplyHeaders(headers map[string][]string) {
 			r.UserAgent = vs[0]
 		case RequestAuthentication:
 			r.Authentication = json.RawMessage(vs[0])
+		case RequestConnections:
+			_ = json.Unmarshal([]byte(vs[0]), &r.Connections)
+		case RequestConnectionBrands:
+			_ = json.Unmarshal([]byte(vs[0]), &r.ConnectionBrands)
 		case RequestAuthorization:
 			_ = json.Unmarshal([]byte(vs[0]), &r.Authorization)
 		}
