@@ -42,6 +42,7 @@ type IntegrationPoint struct {
 	PanelActions        []EntryPoint                 `json:"panelActions,omitempty"`        // Actions to add to the panel
 	PanelTabs           []EntryPoint                 `json:"panelTabs,omitempty"`           // Tabs to show - panels only
 	Preferences         []IntegrationPointPreference `json:"preferences,omitempty"`         // Preferences for the integration
+	Placeholder         string                       `json:"placeholder,omitempty"`         // HTML a panel shows until its page loads; scripts are dropped
 	RequiredPermissions []ScopedKey                  `json:"requiredPermissions,omitempty"` // Permissions that must be set for the user to see this item
 }
 
