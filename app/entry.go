@@ -48,8 +48,9 @@ type IntegrationPoint struct {
 type IntegrationPointPreference int32
 
 const (
-	IntegrationPointPreferenceNone               IntegrationPointPreference = 0
-	IntegrationPointPreferencePanelTabsAsIconBar IntegrationPointPreference = 1
+	IntegrationPointPreferenceNone                IntegrationPointPreference = 0
+	IntegrationPointPreferencePanelTabsAsIconBar  IntegrationPointPreference = 1
+	IntegrationPointPreferenceHeaderActionsToPage IntegrationPointPreference = 2 // Moves the panel's <header-actions> into the host page header; ignored with PanelTabs
 )
 
 type Navigation struct {
