@@ -74,6 +74,11 @@ const RequestFetchStyle = "x-kx-fetch-style"
 const RequestContextData = "x-kx-context-data"
 const RequestActiveTab = "x-kx-active-tab"
 
+// Period is an app's remembered time period, shared by its pages. An app sets it
+// on a response to remember the period the user picked; Rubix sends the last one
+// back on every request to that app.
+const Period = "x-kx-period"
+
 // ResponseDebug Debug object for the browser
 const ResponseDebug = "x-kubex-debug"
 
