@@ -50,6 +50,40 @@ must approve access and configure the workspace's provider. `Services` lists
 only approved, enabled contracts. Public callers must also satisfy the configured
 app, vendor, or global source-IP allowlist.
 
+## LLM service
+
+Declare a dependency on `services.LLMType` version `services.LLMVersion`, then
+call the workspace's chosen provider with the `sdk-go/services` types:
+
+```go
+request := services.LLMRequest{Messages: []services.LLMMessage{{
+    Role:    services.LLMRoleUser,
+    Content: []services.LLMContent{{Type: services.LLMContentText, Text: "Summarise this ticket."}},
+}}}
+
+var reply services.LLMResponse
+_, err := workspace.CallService(ctx, services.LLMType, services.LLMVersion,
+    services.LLMActionGenerate, request, &reply)
+fmt.Println(reply.Text(), reply.StopReason)
+
+stream, err := workspace.StreamService(ctx, services.LLMType, services.LLMVersion,
+    services.LLMActionStream, request)
+if err != nil {
+    return err
+}
+defer stream.Body.Close()
+final, err := services.ReadLLMStream(stream.Body, func(text string) error {
+    fmt.Print(text)
+    return nil
+})
+```
+
+`StreamService` returns the open response body as soon as the provider starts
+answering. The client's timeout does not apply to it; bound a stream with `ctx`.
+A generation can outlast the 30-second default timeout of `CallService`, so
+give LLM calls a client with a longer timeout or use `StreamService`. List models
+with `CallService(..., services.LLMActionModels, map[string]any{}, &models)`.
+
 ## App operations
 
 ```go

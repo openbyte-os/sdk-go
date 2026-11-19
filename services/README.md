@@ -109,7 +109,8 @@ workspace configuration of that capability.
 ## Wire protocol
 
 - Use the HTTP method and relative path declared by the contract.
-- Request bodies, success bodies, and error bodies use `application/json`.
+- Request bodies, success bodies, and error bodies use `application/json`. The LLM
+  `stream` action responds with `text/event-stream`.
 - Send `Accept: application/json`. Unknown JSON fields should be ignored for
   forward compatibility. Adding optional fields is compatible; breaking changes
   require a new major version.
@@ -237,3 +238,178 @@ types do not implement parsing, translation, or validation. Return 400
 constraints. Return 422 `unsupported` when a valid requested format or preference
 cannot be honored, including an unattainable length limit. If generated output
 fails validation, retry internally or return an error; never return it as success.
+
+## LLM v1
+
+`LLMDefinition()` describes three actions on a provider's base path, for example
+`/_services/llm/v1`:
+
+| Action | Endpoint | Body |
+| --- | --- | --- |
+| `generate` | `POST /generate` | `LLMRequest` → `LLMResponse` |
+| `stream` | `POST /stream` | `LLMRequest` → server-sent events ending in an `LLMResponse` |
+| `models` | `POST /models` | `{}` → `LLMModelsResponse` |
+
+Every action is a POST to `/<action>`, the form Rubix Gateway forwards service
+calls in. `LLM` is the corresponding Go implementation interface. A provider advertises the
+actions it implements; a consumer lists the ones it needs in `requiredActions`.
+One provider registration covers every model of a vendor account: the workspace
+selects the provider instance, and each request selects a model.
+
+Request:
+
+```json
+{
+  "model": "example-large",
+  "system": "You are a concise support assistant.",
+  "messages": [
+    {"role": "user", "content": [{"type": "text", "text": "Where is order 1042?"}]}
+  ],
+  "maxOutputTokens": 1024,
+  "temperature": 0.2,
+  "stopSequences": ["END"]
+}
+```
+
+Response (200):
+
+```json
+{
+  "model": "example-large",
+  "content": [{"type": "text", "text": "Order 1042 shipped on Tuesday."}],
+  "stopReason": "end",
+  "usage": {"inputTokens": 21, "outputTokens": 9}
+}
+```
+
+`messages` alternate between `user` and `assistant`, beginning and ending with
+`user`. Every message holds one or more content blocks. To continue a
+conversation, append the response's `content` as an `assistant` message, then the
+next `user` message. A response whose `content` is empty (possible with
+`max_tokens` and `content_filter`) has no assistant turn to append. Providers hold
+no conversation state between requests.
+
+| Field | Meaning |
+| --- | --- |
+| `model` | An ID from `models`. Omitted selects the instance's default model. An unknown ID is 400 `invalid_request`. |
+| `system` | Instruction framing the whole conversation. |
+| `maxOutputTokens` | Cap on generated tokens. Zero or omitted uses the provider's default. |
+| `temperature` | Sampling hint from 0 (most deterministic) to 1 (most varied), scaled to the vendor's range. Ignored by models with fixed sampling. |
+| `stopSequences` | Up to 16 strings that end generation. The matched sequence is excluded from the response. |
+| `tools`, `toolChoice` | See Tools. |
+| `outputSchema` | See Structured output. |
+
+`stopReason` is `end`, `max_tokens` (the content is truncated), `stop_sequence`,
+`tool_use`, or `content_filter` (the vendor withheld or cut short the answer).
+All five are 200 responses; callers check `stopReason` before using the content.
+`usage` reports the vendor's billed token counts for the request.
+
+Message content is data for the model. Providers pass it through and never act
+on instructions inside it.
+
+### Content blocks
+
+| `type` | Fields | Allowed in |
+| --- | --- | --- |
+| `text` | `text`, optional `opaque` | user, assistant |
+| `image` | `mediaType` (`image/png`, `image/jpeg`, `image/gif`, `image/webp`), `data` (standard padded base64, at most 5 MiB decoded) | user |
+| `tool_use` | `toolUseId`, `name`, `input` (JSON object), optional `opaque` | assistant |
+| `tool_result` | `toolUseId`, `text` (the tool's output), `isError` | user |
+
+A response block may carry `opaque`, provider state such as a vendor's reasoning
+signature. Return response blocks unchanged, `opaque` included, when sending them
+back in `messages`; a provider may be unable to continue a tool exchange without it.
+
+### Tools
+
+```json
+{
+  "tools": [{
+    "name": "get_order",
+    "description": "Look up an order by number.",
+    "inputSchema": {"type": "object", "properties": {"number": {"type": "integer"}}, "required": ["number"]}
+  }],
+  "toolChoice": {"type": "auto"}
+}
+```
+
+Tool names are unique, 1–64 characters of letters, digits, `_`, or `-`.
+`toolChoice.type` is `auto` (default), `required` (call at least one tool),
+`none`, or `tool` with the `name` of the tool to call. When the model calls
+tools, the response has `stopReason` `tool_use` and one `tool_use` block per call.
+The caller runs them and answers every one with a `tool_result` block in the next
+user message:
+
+```json
+{"role": "assistant", "content": [{"type": "tool_use", "toolUseId": "call-1", "name": "get_order", "input": {"number": 1042}}]},
+{"role": "user", "content": [{"type": "tool_result", "toolUseId": "call-1", "text": "{\"status\":\"shipped\"}"}]}
+```
+
+Providers never execute tools.
+
+### Structured output
+
+`outputSchema` is a JSON Schema object. The response's text is then one JSON
+document conforming to it, produced with the vendor's constrained decoding.
+Providers confirm the text parses as JSON before returning 200 with `stopReason`
+`end`. A `max_tokens` response may hold an incomplete document. Vendors support
+differing subsets of JSON Schema; a schema the model cannot honor is 422
+`unsupported`.
+
+### Models
+
+```json
+{
+  "models": [
+    {"id": "example-large", "name": "Example Large", "default": true,
+     "capabilities": ["tools", "images", "structured_output"],
+     "inputTokenLimit": 200000, "outputTokenLimit": 16000},
+    {"id": "example-small", "name": "Example Small", "capabilities": ["tools"]}
+  ]
+}
+```
+
+`models` takes an empty JSON object, which providers do not read, and lists what
+the selected instance can use; at most one is the `default`.
+Token limits are omitted when the vendor does not publish them. A request using a
+feature its model lacks (tools, images, or structured output) is 422 `unsupported`.
+
+### Streaming
+
+`stream` takes the same request as `generate`. Send `Accept: text/event-stream`.
+A request that fails before generation starts returns the usual JSON error with
+a non-2xx status. Otherwise the response is 200 `text/event-stream`:
+
+```text
+event: text
+data: {"text":"Order 1042 "}
+
+event: text
+data: {"text":"shipped on Tuesday."}
+
+event: done
+data: {"response":{"model":"example-large","content":[{"type":"text","text":"Order 1042 shipped on Tuesday."}],"stopReason":"end","usage":{"inputTokens":21,"outputTokens":9}}}
+```
+
+| Event | Data | Meaning |
+| --- | --- | --- |
+| `text` | `{"text": "..."}` | The next increment of response text. |
+| `done` | `{"response": LLMResponse}` | The complete response, identical to what `generate` returns. Always last. |
+| `error` | `{"error": {"code": "...", "message": "..."}}` | Generation failed after the stream began. Always last. |
+
+The concatenated `text` events equal the text blocks of the final response.
+Tool calls arrive whole in the `done` response. A stream that closes without
+`done` or `error` has failed. Ignore unknown event types and SSE comment lines;
+providers may send comments as keep-alives. `WriteLLMStreamEvent` and
+`ReadLLMStream` implement this framing.
+
+### Validation and limits
+
+`LLMRequest.Validate` checks the structural rules above and returns
+`invalid_request`; providers call it before contacting the vendor, then check the
+model and its capabilities. Every provider accepts request bodies up to 16 MiB,
+1,024 messages, and 128 tools. Vendor failures map to the common error codes:
+429 `rate_limited` for quota, 503 `unavailable` for vendor authentication or
+availability failures, and 400 `invalid_request` when the conversation exceeds
+the model's context window. Upstream error bodies and credentials are never
+returned.

@@ -120,7 +120,9 @@ func validSegment(value string) bool {
 	return value != "" && value != "." && value != ".." && strings.TrimSpace(value) == value && !strings.ContainsAny(value, "/\\?#%") && !strings.ContainsFunc(value, unicode.IsControl)
 }
 
-func (w *WorkspaceClient) request(ctx context.Context, method string, segments []string, input any) (*Response, error) {
+// newRequest builds an authenticated request for a workspace route. POST
+// requests carry input as their JSON body.
+func (w *WorkspaceClient) newRequest(ctx context.Context, method string, segments []string, input any) (*http.Request, error) {
 	if !validSegment(w.workspace) {
 		return nil, errors.New("gateway: invalid workspace ID")
 	}
@@ -148,11 +150,11 @@ func (w *WorkspaceClient) request(ctx context.Context, method string, segments [
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	resp, err := w.client.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("gateway: send request: %w", err)
-	}
-	defer resp.Body.Close()
+	return req, nil
+}
+
+// readResponse buffers a response body up to the client's size limit.
+func (w *WorkspaceClient) readResponse(resp *http.Response) (*Response, error) {
 	payload, err := io.ReadAll(io.LimitReader(resp.Body, w.client.maxResponseBytes+1))
 	if err != nil {
 		return nil, fmt.Errorf("gateway: read response: %w", err)
@@ -165,6 +167,19 @@ func (w *WorkspaceClient) request(ctx context.Context, method string, segments [
 		return response, responseError(response)
 	}
 	return response, nil
+}
+
+func (w *WorkspaceClient) request(ctx context.Context, method string, segments []string, input any) (*Response, error) {
+	req, err := w.newRequest(ctx, method, segments, input)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := w.client.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("gateway: send request: %w", err)
+	}
+	defer resp.Body.Close()
+	return w.readResponse(resp)
 }
 
 func decodeEnvelope(response *Response, output any) error {
@@ -219,6 +234,43 @@ func (w *WorkspaceClient) CallService(ctx context.Context, kind string, version 
 		}
 	}
 	return response, nil
+}
+
+// Stream is an open streaming service response. Read Body to the end of the
+// stream and always Close it.
+type Stream struct {
+	StatusCode int
+	TraceID    string
+	Header     http.Header
+	Body       io.ReadCloser
+}
+
+// StreamService calls a service action that answers with a stream, such as the
+// server-sent events of the LLM stream action, and returns its open body. The
+// HTTP client's timeout does not apply to a stream: bound it with ctx, which
+// also cancels the read. A non-2xx response is buffered and returned as an
+// error, exactly as CallService does.
+func (w *WorkspaceClient) StreamService(ctx context.Context, kind string, version int, action string, input any) (*Stream, error) {
+	if version <= 0 {
+		return nil, errors.New("gateway: service version must be positive")
+	}
+	req, err := w.newRequest(ctx, http.MethodPost, []string{"services", kind, strconv.Itoa(version), action}, input)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "text/event-stream, application/json")
+	streaming := *w.client.httpClient
+	streaming.Timeout = 0
+	resp, err := streaming.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("gateway: send request: %w", err)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		defer resp.Body.Close()
+		_, err := w.readResponse(resp)
+		return nil, err
+	}
+	return &Stream{StatusCode: resp.StatusCode, TraceID: resp.Header.Get("X-Kx-Trace-Id"), Header: resp.Header.Clone(), Body: resp.Body}, nil
 }
 
 // CallOperation decodes data from the Gateway operation response envelope.

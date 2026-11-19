@@ -12,6 +12,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/openbyte-os/sdk-go/app"
 	"github.com/openbyte-os/sdk-go/gateway"
@@ -243,5 +244,71 @@ func TestCredentialFormattingIsRedacted(t *testing.T) {
 				t.Fatal("token appeared in formatted client or rotation result")
 			}
 		}
+	}
+}
+
+func TestStreamService(t *testing.T) {
+	release := make(chan struct{})
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" || r.Header.Get("Authorization") != "Bearer old-token" || !strings.Contains(r.Header.Get("Accept"), "text/event-stream") {
+			t.Errorf("incorrect stream request: %s %v", r.Method, r.Header)
+		}
+		switch r.URL.Path {
+		case "/v1/workspaces/ws-a/services/llm/1/stream":
+			body, _ := io.ReadAll(r.Body)
+			if string(body) != `{"messages":[]}` {
+				t.Errorf("stream request body: %s", body)
+			}
+			w.Header().Set("Content-Type", "text/event-stream")
+			w.Header().Set("X-Kx-Trace-Id", "stream-trace")
+			_, _ = io.WriteString(w, "event: text\ndata: {\"text\":\"first\"}\n\n")
+			w.(http.Flusher).Flush()
+			<-release
+			_, _ = io.WriteString(w, "event: text\ndata: {\"text\":\"second\"}\n\n")
+		case "/v1/workspaces/ws-a/services/llm/1/hang":
+			w.(http.Flusher).Flush()
+			<-r.Context().Done()
+		default:
+			envelope(w, 503, nil)
+		}
+	}))
+	defer server.Close()
+	// The client timeout must not cut a stream that outlives it.
+	workspace := client(t, server.URL, gateway.WithHTTPClient(&http.Client{Timeout: 50 * time.Millisecond})).Workspace("ws-a")
+	stream, err := workspace.StreamService(context.Background(), "llm", 1, "stream", map[string]any{"messages": []string{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer stream.Body.Close()
+	if stream.StatusCode != 200 || stream.TraceID != "stream-trace" || stream.Header.Get("Content-Type") != "text/event-stream" {
+		t.Fatalf("stream response: %+v", stream)
+	}
+	first := make([]byte, len("event: text\ndata: {\"text\":\"first\"}\n\n"))
+	if _, err := io.ReadFull(stream.Body, first); err != nil || !strings.Contains(string(first), "first") {
+		t.Fatalf("first event must arrive before the stream ends: %q %v", first, err)
+	}
+	time.Sleep(100 * time.Millisecond)
+	close(release)
+	rest, err := io.ReadAll(stream.Body)
+	if err != nil || !strings.Contains(string(rest), "second") {
+		t.Fatalf("rest of stream: %q %v", rest, err)
+	}
+
+	var failure *gateway.Error
+	if _, err := workspace.StreamService(context.Background(), "llm", 1, "missing", nil); !errors.As(err, &failure) || failure.StatusCode != 503 {
+		t.Fatalf("expected a gateway error, got %v", err)
+	}
+	if _, err := workspace.StreamService(context.Background(), "llm", 0, "stream", nil); err == nil {
+		t.Fatal("expected a version error")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	hung, err := workspace.StreamService(ctx, "llm", 1, "hang", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer hung.Body.Close()
+	cancel()
+	if _, err := io.ReadAll(hung.Body); !errors.Is(err, context.Canceled) {
+		t.Fatalf("cancelling the context must end the read: %v", err)
 	}
 }

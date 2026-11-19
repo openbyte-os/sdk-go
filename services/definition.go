@@ -2,6 +2,8 @@
 // Providers implement the same contract regardless of their underlying vendor.
 package services
 
+import "net/http"
+
 // Definition describes a standard service contract, independently of any app
 // that implements it. Version is the positive major version of the wire contract.
 // Breaking changes require a new major version.
@@ -35,6 +37,28 @@ type Error struct {
 
 func (e Error) Error() string {
 	return e.Code + ": " + e.Message
+}
+
+// HTTPStatus returns the response status for the error's code, and 500 for a
+// code without a common mapping.
+func (e Error) HTTPStatus() int {
+	switch e.Code {
+	case ErrorCodeInvalidRequest:
+		return http.StatusBadRequest
+	case ErrorCodeUnauthorized:
+		return http.StatusUnauthorized
+	case ErrorCodeForbidden:
+		return http.StatusForbidden
+	case ErrorCodeNotFound:
+		return http.StatusNotFound
+	case ErrorCodeUnsupported:
+		return http.StatusUnprocessableEntity
+	case ErrorCodeRateLimited:
+		return http.StatusTooManyRequests
+	case ErrorCodeUnavailable:
+		return http.StatusServiceUnavailable
+	}
+	return http.StatusInternalServerError
 }
 
 const (
