@@ -44,6 +44,7 @@ type Definition struct {
 	ScheduledTasks       []ScheduledTask        `json:"scheduledTasks,omitempty"` // Recurring tasks available for workspace enablement
 	Notifications        *Notifications         `json:"notifications,omitempty"`  // Notification groups and types this app publishes
 	ListenToEvents       []ScopedKey            `json:"listenToEvents,omitempty"`
+	DevNav               []Navigation           `json:"devNav,omitempty"`     // Developer Portal - App navigation
 	Navigation           []Navigation           `json:"navigation,omitempty"` // App navigation
 	NavigationUri        string                 `json:"navigationUri,omitempty"`
 
