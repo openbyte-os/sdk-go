@@ -84,6 +84,19 @@ A generation can outlast the 30-second default timeout of `CallService`, so
 give LLM calls a client with a longer timeout or use `StreamService`. List models
 with `CallService(..., services.LLMActionModels, map[string]any{}, &models)`.
 
+## Workspace members
+
+Declare a dependency on `gateway.MembersType` version `gateway.MembersVersion`
+with `gateway.MembersAction`, then list the workspace's active members:
+
+```go
+members, err := workspace.Members(ctx, userID)
+```
+
+A non-empty user who is not a workspace owner narrows the list to the BPOs they belong to or manage;
+a user in neither sees everyone, and an unknown user is a 404. The filter is not
+authentication: workspace approval controls the app's access to member data.
+
 ## App operations
 
 ```go

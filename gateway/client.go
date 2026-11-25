@@ -174,6 +174,10 @@ func (w *WorkspaceClient) request(ctx context.Context, method string, segments [
 	if err != nil {
 		return nil, err
 	}
+	return w.send(req)
+}
+
+func (w *WorkspaceClient) send(req *http.Request) (*Response, error) {
 	resp, err := w.client.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("gateway: send request: %w", err)
