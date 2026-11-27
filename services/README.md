@@ -312,7 +312,7 @@ on instructions inside it.
 | `type` | Fields | Allowed in |
 | --- | --- | --- |
 | `text` | `text`, optional `opaque` | user, assistant |
-| `image` | `mediaType` (`image/png`, `image/jpeg`, `image/gif`, `image/webp`), `data` (standard padded base64, at most 5 MiB decoded) | user |
+| `image` | `mediaType` (`image/png`, `image/jpeg`, `image/gif`, `image/webp`), `data` (standard padded base64, at most 2 MiB decoded) | user |
 | `tool_use` | `toolUseId`, `name`, `input` (JSON object), optional `opaque` | assistant |
 | `tool_result` | `toolUseId`, `text` (the tool's output), `isError` | user |
 
@@ -400,14 +400,16 @@ data: {"response":{"model":"example-large","content":[{"type":"text","text":"Ord
 The concatenated `text` events equal the text blocks of the final response.
 Tool calls arrive whole in the `done` response. A stream that closes without
 `done` or `error` has failed. Ignore unknown event types and SSE comment lines;
-providers may send comments as keep-alives. `WriteLLMStreamEvent` and
+providers send a comment such as `: keep-alive` at least every 15 seconds while
+no event is due, or the gateway may end an idle stream. The gateway also ends a
+stream after 5 minutes, 4 MiB, or one event over 1 MiB with an `error` event. `WriteLLMStreamEvent` and
 `ReadLLMStream` implement this framing.
 
 ### Validation and limits
 
 `LLMRequest.Validate` checks the structural rules above and returns
 `invalid_request`; providers call it before contacting the vendor, then check the
-model and its capabilities. Every provider accepts request bodies up to 16 MiB,
+model and its capabilities. Every provider accepts request bodies up to 4 MiB,
 1,024 messages, and 128 tools. Vendor failures map to the common error codes:
 429 `rate_limited` for quota, 503 `unavailable` for vendor authentication or
 availability failures, and 400 `invalid_request` when the conversation exceeds

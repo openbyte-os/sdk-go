@@ -236,11 +236,11 @@ type LLMModelsResponse struct {
 // LLM request limits every provider accepts. Providers reject requests beyond
 // them with 400 invalid_request.
 const (
-	LLMMaxRequestBytes = 16 << 20
+	LLMMaxRequestBytes = 4 << 20
 	LLMMaxMessages     = 1024
 	LLMMaxTools        = 128
 	LLMMaxStopSequence = 16
-	LLMMaxImageBytes   = 5 << 20 // Decoded size of one image.
+	LLMMaxImageBytes   = 2 << 20 // Decoded size of one image.
 )
 
 // LLMImageMediaTypes are the image formats every image-capable provider accepts.
@@ -386,7 +386,7 @@ func validLLMImage(c LLMContent) error {
 		return llmInvalid("image mediaType must be image/png, image/jpeg, image/gif, or image/webp")
 	}
 	if c.Data == "" || base64.StdEncoding.DecodedLen(len(c.Data)) > LLMMaxImageBytes+2 {
-		return llmInvalid("image data must be non-empty and at most 5 MiB decoded")
+		return llmInvalid("image data must be non-empty and at most 2 MiB decoded")
 	}
 	if _, err := base64.StdEncoding.DecodeString(c.Data); err != nil {
 		return llmInvalid("image data must be standard padded base64")
